@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Microcosm</title>
+
+    <meta property="og:title" content="Microcosm" />
+    <meta property="og:description" content="Flux with actions at center stage. Write optimistic updates, cancel requests, and track changes with ease."
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="http://code.viget.com/microcosm" />
+    <meta property="og:image" content="http://code.viget.com/microcosm/assets/microcosm-badge.png" />
+
+    <link rel="stylesheet" href="http://code.viget.com/microcosm/assets/style.css" />
+  </head>
+  <body>
+    <header class="header fill-bloom">
+      <div class="header__inner">
+        <a href="http://code.viget.com/microcosm">
+          <img src="http://code.viget.com/microcosm/assets/microcosm-white.svg" alt="Microcosm" height="24" width="207" />
+        </a>
+
+        <nav class="nav">
+          <a href="http://code.viget.com/microcosm/guides/quickstart.html">Guides</a>
+          <a href="https://github.com/vigetlabs/microcosm">Github</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="main -with-sidebar">
+      <aside class="sidebar">
+        <section class="sidebar__group">
+          <h4 class="sidebar__heading">Introduction</h4>
+          <ul>
+            <li><a href="http://code.viget.com/microcosm/guides/quickstart.html">Quickstart</a></li>
+            <li><a href="http://code.viget.com/microcosm/guides/architecture.html">Architecture</a></li>
+          </ul>
+        </section>
+        <section class="sidebar__group">
+          <h4 class="sidebar__heading">API</h4>
+          <ul>
+            <li><a href="http://code.viget.com/microcosm/api/microcosm.html">Microcosm</a></li>
+            <li><a href="http://code.viget.com/microcosm/api/domains.html">Domains</a></li>
+            <li><a href="http://code.viget.com/microcosm/api/actions.html">Actions</a></li>
+            <li><a href="http://code.viget.com/microcosm/api/effects.html">Effects</a></li>
+          </ul>
+        </section>
+        <section class="sidebar__group">
+          <h4 class="sidebar__heading">Addons</h4>
+          <ul>
+            <li><a href="http://code.viget.com/microcosm/api/presenter.html">Presenter</a></li>
+            <li><a href="http://code.viget.com/microcosm/api/form.html">Form</a></li>
+            <li><a href="http://code.viget.com/microcosm/api/with-intent.html">withIntent</a></li>
+          </ul>
+        </section>
+        <section class="sidebar__group">
+          <h4 class="sidebar__heading">Testing</h4>
+          <ul>
+            <li><a href="http://code.viget.com/microcosm/testing/overview.html">Overview</a></li>
+            <li><a href="http://code.viget.com/microcosm/testing/domains.html">Domains</a></li>
+            <li><a href="http://code.viget.com/microcosm/testing/effects.html">Effects</a></li>
+            <li><a href="http://code.viget.com/microcosm/testing/intents.html">Intents</a></li>
+          </ul>
+        </section>
+        <section class="sidebar__group">
+          <h4 class="sidebar__heading">Recipes</h4>
+          <ul>
+            <li><a href="http://code.viget.com/microcosm/recipes/ajax.html">AJAX</a></li>
+            <li><a href="http://code.viget.com/microcosm/recipes/react-router.html">React Router</a></li>
+            <li><a href="http://code.viget.com/microcosm/recipes/immutable-js.html">ImmutableJS</a></li>
+            <li><a href="http://code.viget.com/microcosm/recipes/preact.html">Preact</a></li>
+          </ul>
+        </section>
+      </aside>
+
+      <div class="content"><h1 id="react-router-integration">React Router Integration</h1>
+<p>For most applications that utilize React Router, having access to Microcosm is essential for dispatching actions as route handlers enter the stage.</p>
+<p>The <code>Presenter</code> addon can be used to “frame” an app with a given Microcosm in context:</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="im">import</span> React     <span class="im">from</span> <span class="st">&#39;react&#39;</span>
+<span class="im">import</span> DOM       <span class="im">from</span> <span class="st">&#39;react-dom&#39;</span>
+<span class="im">import</span> Presenter <span class="im">from</span> <span class="st">&#39;microcosm/addons/presenter&#39;</span>
+<span class="im">import</span> Microcosm <span class="im">from</span> <span class="st">&#39;microcosm&#39;</span>
+<span class="im">import</span> routes    <span class="im">from</span> <span class="st">&#39;./routes&#39;</span>
+
+<span class="im">import</span> <span class="op">{</span> Router<span class="op">,</span> browserHistory <span class="op">}</span> <span class="im">from</span> <span class="st">&#39;react-router&#39;</span>
+
+<span class="kw">const</span> repo <span class="op">=</span> <span class="kw">new</span> <span class="at">Microcosm</span>()
+
+<span class="va">DOM</span>.<span class="at">render</span>((
+  <span class="op">&lt;</span>Presenter repo<span class="op">={</span> repo <span class="op">}&gt;</span>
+    <span class="op">&lt;</span>Router history<span class="op">={</span> browserHistory <span class="op">}</span> routes<span class="op">={</span> routes <span class="op">}</span> <span class="ss">/&gt;</span>
+<span class="ss">  &lt;/Presenter</span><span class="op">&gt;</span>
+)<span class="op">,</span> <span class="va">document</span>.<span class="at">getElementById</span>(<span class="st">&#39;entry-point&#39;</span>))</code></pre></div>
+<p><code>Presenter</code> accepts an instance of Microcosm, exposing it via <code>context</code>. From there, other presenters can lean on that context to add specific data subscriptions:</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="im">import</span> Presenter <span class="im">from</span> <span class="st">&#39;microcosm/addons/presenter&#39;</span>
+
+<span class="kw">class</span> Planets <span class="kw">extends</span> Presenter <span class="op">{</span>
+  <span class="at">viewModel</span>() <span class="op">{</span>
+    <span class="cf">return</span> <span class="op">{</span>
+      <span class="dt">planets</span><span class="op">:</span> state <span class="op">=&gt;</span> <span class="va">state</span>.<span class="at">planets</span>
+    <span class="op">}</span>
+  <span class="op">}</span>
+
+  <span class="at">render</span>() <span class="op">{</span>
+    <span class="cf">return</span> (
+      <span class="op">&lt;</span>ul<span class="op">&gt;</span>
+        <span class="op">{</span> <span class="kw">this</span>.<span class="va">state</span>.<span class="va">planets</span>.<span class="at">map</span>(planet <span class="op">=&gt;</span> (<span class="op">&lt;</span>li<span class="op">&gt;{</span> <span class="va">planet</span>.<span class="at">name</span> <span class="op">}&lt;</span><span class="ss">/li&gt;</span><span class="sc">))</span><span class="ss"> }</span>
+<span class="ss">      &lt;/ul</span><span class="op">&gt;</span>
+    )
+  <span class="op">}</span>
+<span class="op">}</span></code></pre></div></div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer__inner">
+        <nav class="footer__left">
+          <a href="https://www.npmjs.com/package/microcosm">
+            <img src="https://img.shields.io/npm/v/microcosm.svg?style=flat-square" alt="View package on NPM" />
+          </a>
+          <a href="http://code.viget.com/microcosm/changelog.html">Changelog</a>
+          <a href="https://github.com/vigetlabs/microcosm">Source</a>
+        </nav>
+        <div class="footer__right">
+          Built with patience and time by <a href="https://viget.com">●° Viget</a>
+        </div>
+      </div>
+    </footer>
+
+    <script>
+      // set active links
+      (function() {
+        var location = window.location.toString()
+
+        for (var i = 0; i < document.links.length; i++) {
+          if (document.links[i].href === location) {
+            document.links[i].classList.add('active')
+          }
+        }
+      }())
+    </script>
+  </body>
+</html>

@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Microcosm</title>
+
+    <meta property="og:title" content="Microcosm" />
+    <meta property="og:description" content="Flux with actions at center stage. Write optimistic updates, cancel requests, and track changes with ease."
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="http://code.viget.com/microcosm" />
+    <meta property="og:image" content="http://code.viget.com/microcosm/assets/microcosm-badge.png" />
+
+    <link rel="stylesheet" href="http://code.viget.com/microcosm/assets/style.css" />
+  </head>
+  <body>
+    <header class="header fill-bloom">
+      <div class="header__inner">
+        <a href="http://code.viget.com/microcosm">
+          <img src="http://code.viget.com/microcosm/assets/microcosm-white.svg" alt="Microcosm" height="24" width="207" />
+        </a>
+
+        <nav class="nav">
+          <a href="http://code.viget.com/microcosm/guides/quickstart.html">Guides</a>
+          <a href="https://github.com/vigetlabs/microcosm">Github</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="main -with-sidebar">
+      <aside class="sidebar">
+        <section class="sidebar__group">
+          <h4 class="sidebar__heading">Introduction</h4>
+          <ul>
+            <li><a href="http://code.viget.com/microcosm/guides/quickstart.html">Quickstart</a></li>
+            <li><a href="http://code.viget.com/microcosm/guides/architecture.html">Architecture</a></li>
+          </ul>
+        </section>
+        <section class="sidebar__group">
+          <h4 class="sidebar__heading">API</h4>
+          <ul>
+            <li><a href="http://code.viget.com/microcosm/api/microcosm.html">Microcosm</a></li>
+            <li><a href="http://code.viget.com/microcosm/api/domains.html">Domains</a></li>
+            <li><a href="http://code.viget.com/microcosm/api/actions.html">Actions</a></li>
+            <li><a href="http://code.viget.com/microcosm/api/effects.html">Effects</a></li>
+          </ul>
+        </section>
+        <section class="sidebar__group">
+          <h4 class="sidebar__heading">Addons</h4>
+          <ul>
+            <li><a href="http://code.viget.com/microcosm/api/presenter.html">Presenter</a></li>
+            <li><a href="http://code.viget.com/microcosm/api/form.html">Form</a></li>
+            <li><a href="http://code.viget.com/microcosm/api/with-intent.html">withIntent</a></li>
+          </ul>
+        </section>
+        <section class="sidebar__group">
+          <h4 class="sidebar__heading">Testing</h4>
+          <ul>
+            <li><a href="http://code.viget.com/microcosm/testing/overview.html">Overview</a></li>
+            <li><a href="http://code.viget.com/microcosm/testing/domains.html">Domains</a></li>
+            <li><a href="http://code.viget.com/microcosm/testing/effects.html">Effects</a></li>
+            <li><a href="http://code.viget.com/microcosm/testing/intents.html">Intents</a></li>
+          </ul>
+        </section>
+        <section class="sidebar__group">
+          <h4 class="sidebar__heading">Recipes</h4>
+          <ul>
+            <li><a href="http://code.viget.com/microcosm/recipes/ajax.html">AJAX</a></li>
+            <li><a href="http://code.viget.com/microcosm/recipes/react-router.html">React Router</a></li>
+            <li><a href="http://code.viget.com/microcosm/recipes/immutable-js.html">ImmutableJS</a></li>
+            <li><a href="http://code.viget.com/microcosm/recipes/preact.html">Preact</a></li>
+          </ul>
+        </section>
+      </aside>
+
+      <div class="content"><h1 id="presenter">Presenter</h1>
+<ol style="list-style-type: decimal">
+<li><a href="#overview">Overview</a></li>
+<li><a href="#computed-properties">Computed Properties</a></li>
+<li><a href="#receiving-intents">Receiving Intents</a></li>
+<li><a href="#api">API</a></li>
+</ol>
+<h2 id="overview">Overview</h2>
+<p>When working on larger applications, we observed substantial benefits from creating a separation between “passive view” React components, and those that interacted directly with Microcosm (and other non-presentational entities).</p>
+<p>The Presenter add-on makes it easier to keep application logic high within a component tree. It is designed specifically to extract and compute properties coming from a Microcosm instance and efficiently send them down as <code>props</code> to child “passive view” React components.</p>
+<p>Additionally, Presenters expose an “intent” API (see <a href="./with-intent.md"><code>withIntent</code></a> and <a href="./form.md"><code>&lt;Form /&gt;</code></a>). Intents allow components deep within a component tree the ability to broadcast messages through Presenters, eventually passing straight into a Microcosm repo if no Presenter’s <code>register</code> method intercepts it.</p>
+<p>We’ll cover both of these features within this document</p>
+<h2 id="computed-properties">Computed Properties</h2>
+<p>Presenter extends from <code>React.Component</code>, and can be used just like a React component:</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="im">import</span> React <span class="im">from</span> <span class="st">&#39;react&#39;</span>
+<span class="im">import</span> DOM <span class="im">from</span> <span class="st">&#39;react-dom&#39;</span>
+<span class="im">import</span> Presenter <span class="im">from</span> <span class="st">&#39;microcosm/addons/presenter&#39;</span>
+<span class="im">import</span> Microcosm <span class="im">from</span> <span class="st">&#39;microcosm&#39;</span>
+
+<span class="kw">const</span> repo <span class="op">=</span> <span class="kw">new</span> <span class="at">Microcosm</span>()
+
+<span class="va">repo</span>.<span class="at">patch</span>(<span class="op">{</span> <span class="dt">planets</span><span class="op">:</span> [ <span class="st">&#39;Mercury&#39;</span><span class="op">,</span> <span class="st">&#39;Venus&#39;</span><span class="op">,</span> <span class="st">&#39;Earth&#39;</span> ]<span class="op">}</span>)
+
+<span class="kw">class</span> PlanetsPresenter <span class="kw">extends</span> Presenter <span class="op">{</span>
+
+  <span class="at">model</span> (props<span class="op">,</span> state) <span class="op">{</span>
+    <span class="cf">return</span> <span class="op">{</span>
+      <span class="dt">planets</span><span class="op">:</span> data <span class="op">=&gt;</span> <span class="va">data</span>.<span class="at">planets</span>
+    <span class="op">}</span>
+  <span class="op">}</span>
+
+  <span class="at">view</span> (<span class="op">{</span> planets <span class="op">}</span>) <span class="op">{</span>
+    <span class="cf">return</span> <span class="op">&lt;</span>p<span class="op">&gt;{</span> <span class="va">planets</span>.<span class="at">join</span>(<span class="st">&#39;, &#39;</span>) <span class="op">}&lt;</span><span class="ss">/p&gt;</span>
+<span class="ss">  }</span>
+
+<span class="ss">}</span>
+
+<span class="ss">DOM.render</span><span class="sc">(</span><span class="ss">&lt;PlanetsPresenter repo={ repo } /</span><span class="op">&gt;</span>)</code></pre></div>
+<p>In the example above, the <code>PlanetsPresenter</code> will extract a list of planets from the Microcosm instance provided to it via the <code>repo</code> prop. This is available as state, which the Presenter can send into a child component.</p>
+<h3 id="listening-to-all-state-changes">Listening to all state changes</h3>
+<p>While we do not recommend it for large repos, some times it’s simply easier to subscribe to all repo changes. <code>model</code> can also return a function, which will be called with state:</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">class</span> PlanetsPresenter <span class="kw">extends</span> Presenter <span class="op">{</span>
+  <span class="at">model</span> () <span class="op">{</span>
+    <span class="cf">return</span> data <span class="op">=&gt;</span> data
+  <span class="op">}</span>
+
+  <span class="at">view</span> (<span class="op">{</span> planets <span class="op">}</span>) <span class="op">{</span>
+    <span class="cf">return</span> <span class="op">&lt;</span>p<span class="op">&gt;{</span> <span class="va">planets</span>.<span class="at">join</span>(<span class="st">&#39;, &#39;</span>) <span class="op">}&lt;</span><span class="ss">/p&gt;</span>
+<span class="ss">  }</span>
+<span class="ss">}</span></code></pre></div>
+<h2 id="receiving-intents">Receiving Intents</h2>
+<p>Though explicit, passing event callbacks down through a deep component hierarchy can be cumbersome and brittle. Presenters expose a method on <code>context</code> that enable child components to declare <code>intents</code> receivable by Presenters.</p>
+<p>The Form add-on can be used to broadcast intents to Presenters:</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="im">import</span> React <span class="im">from</span> <span class="st">&#39;react&#39;</span>
+<span class="im">import</span> DOM <span class="im">from</span> <span class="st">&#39;react-dom&#39;</span>
+<span class="im">import</span> Presenter <span class="im">from</span> <span class="st">&#39;microcosm/addons/presenter&#39;</span>
+<span class="im">import</span> Form <span class="im">from</span> <span class="st">&#39;microcosm/addons/form&#39;</span>
+<span class="im">import</span> Microcosm <span class="im">from</span> <span class="st">&#39;microcosm&#39;</span>
+
+<span class="kw">const</span> repo <span class="op">=</span> <span class="kw">new</span> <span class="at">Microcosm</span>()
+
+<span class="kw">const</span> increaseCount <span class="op">=</span> n <span class="op">=&gt;</span> n
+
+<span class="va">repo</span>.<span class="at">addDomain</span>(<span class="st">&#39;count&#39;</span><span class="op">,</span> <span class="op">{</span>
+  <span class="at">getInitialState</span>() <span class="op">{</span>
+    <span class="cf">return</span> <span class="dv">0</span>
+  <span class="op">},</span>
+  <span class="at">increase</span>(count<span class="op">,</span> amount) <span class="op">{</span>
+    <span class="cf">return</span> count <span class="op">+</span> amount
+  <span class="op">},</span>
+  <span class="at">register</span>() <span class="op">{</span>
+    <span class="cf">return</span> <span class="op">{</span>
+      [increaseCount] <span class="op">:</span> <span class="kw">this</span>.<span class="at">increase</span>
+    <span class="op">}</span>
+  <span class="op">}</span>
+<span class="op">}</span>)
+
+<span class="kw">function</span> <span class="at">StepperForm</span> (<span class="op">{</span> count <span class="op">}</span>) <span class="op">{</span>
+  <span class="cf">return</span> (
+    <span class="op">&lt;</span>Form intent<span class="op">=</span><span class="st">&quot;increaseCount&quot;</span><span class="op">&gt;</span>
+      <span class="op">&lt;</span>input type<span class="op">=</span><span class="st">&quot;hidden&quot;</span> name<span class="op">=</span><span class="st">&quot;amount&quot;</span> value<span class="op">=</span><span class="st">&quot;1&quot;</span> <span class="ss">/&gt;</span>
+<span class="ss">      &lt;p&gt;The current count is { count }&lt;/p</span><span class="op">&gt;</span>
+      <span class="op">&lt;</span>button<span class="op">&gt;+</span> <span class="dv">1</span><span class="op">&lt;</span><span class="ss">/button&gt;</span>
+<span class="ss">    &lt;/Form</span><span class="op">&gt;</span>
+  )
+<span class="op">}</span>
+
+<span class="kw">class</span> CountPresenter <span class="kw">extends</span> Presenter <span class="op">{</span>
+  <span class="at">model</span> () <span class="op">{</span>
+    <span class="cf">return</span> <span class="op">{</span>
+      <span class="dt">count</span><span class="op">:</span> data <span class="op">=&gt;</span> <span class="va">data</span>.<span class="at">count</span>
+    <span class="op">}</span>
+  <span class="op">}</span>
+
+  <span class="at">register</span> () <span class="op">{</span>
+    <span class="cf">return</span> <span class="op">{</span>
+      <span class="dt">increaseCount</span><span class="op">:</span> <span class="kw">this</span>.<span class="at">increaseCount</span>
+    <span class="op">}</span>
+  <span class="op">}</span>
+
+  <span class="at">increaseCount</span> (repo<span class="op">,</span> <span class="op">{</span> amount <span class="op">}</span>) <span class="op">{</span>
+    <span class="cf">return</span> <span class="va">repo</span>.<span class="at">push</span>(increment<span class="op">,</span> amount)
+  <span class="op">}</span>
+
+  <span class="at">view</span> (<span class="op">{</span> count <span class="op">}</span>) <span class="op">{</span>
+    <span class="cf">return</span> <span class="op">&lt;</span>StepperForm count<span class="op">={</span> count <span class="op">}</span> <span class="ss">/&gt;</span>
+<span class="ss">  }</span>
+<span class="ss">}</span>
+
+<span class="ss">DOM.render</span><span class="sc">(</span><span class="ss">&lt;CountPresenter repo={ repo } /</span><span class="op">&gt;,</span> <span class="va">document</span>.<span class="at">getElementById</span>(<span class="st">&#39;container&#39;</span>))</code></pre></div>
+<p>Whenever the form is submitted, an <code>increaseCount</code> intent will bubble up to the associated Presenter including the serialized parameters of the form. Since this Presenter’s register method includes <code>increaseCount</code>, it will invoke the method with the associated parameters.</p>
+<p>If a Presenter does not implement an intent, it will bubble up to any parent Presenters. If no Presenter implements the intent, an exception will raise. This is useful for broadcasting action intents. For example, we could replace the prior Form example with:</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">function</span> <span class="at">StepperForm</span> (<span class="op">{</span> count <span class="op">}</span>) <span class="op">{</span>
+  <span class="cf">return</span> (
+    <span class="op">&lt;</span>Form intent<span class="op">={</span> increaseCount <span class="op">}&gt;</span>
+      <span class="op">&lt;</span>input type<span class="op">=</span><span class="st">&quot;hidden&quot;</span> name<span class="op">=</span><span class="st">&quot;amount&quot;</span> value<span class="op">=</span><span class="st">&quot;1&quot;</span> <span class="ss">/&gt;</span>
+<span class="ss">      &lt;p&gt;The current count is { count }&lt;/p</span><span class="op">&gt;</span>
+      <span class="op">&lt;</span>button<span class="op">&gt;+</span> <span class="dv">1</span><span class="op">&lt;</span><span class="ss">/button&gt;</span>
+<span class="ss">    &lt;/Form</span><span class="op">&gt;</span>
+  )
+<span class="op">}</span></code></pre></div>
+<h2 id="api">API</h2>
+<h3 id="setuprepo-props"><code>setup(repo, props)</code></h3>
+<p>Called when a presenter is created, useful for initial data fetching and other prep work.</p>
+<h3 id="updaterepo-props"><code>update(repo, props)</code></h3>
+<p>Called when a presenter gets new props. This is useful for secondary data fetching and other work that must happen when a Presenter receives new information.</p>
+<p>If pure (by default) this will only get called if properties are shallowly different.</p>
+<h3 id="teardownrepo-props"><code>teardown(repo, props)</code></h3>
+<p>Runs when the presenter unmounts. Useful for tearing down subscriptions and other setup behavior.</p>
+<h3 id="modelprops-state"><code>model(props, state)</code></h3>
+<p>Builds a view model for the current props and state. This must return an object of key/value pairs. If the value is a function, it will be calculated by passing in the repo’s current state:</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">class</span> PlanetPresenter <span class="kw">extends</span> Presenter <span class="op">{</span>
+  <span class="at">model</span> (props<span class="op">,</span> state) <span class="op">{</span>
+    <span class="cf">return</span> <span class="op">{</span>
+      <span class="dt">planet </span><span class="op">:</span> data <span class="op">=&gt;</span> <span class="va">data</span>.<span class="va">planets</span>.<span class="at">find</span>(p <span class="op">=&gt;</span> <span class="va">p</span>.<span class="at">id</span> <span class="op">===</span> <span class="va">props</span>.<span class="at">planetId</span>)
+    <span class="op">}</span>
+  <span class="op">}</span>
+  <span class="co">// ...</span>
+<span class="op">}</span></code></pre></div>
+<p>If the Presenter is pure (passed in as either a prop or as an option to the associated repo), this will only update state if shallowly equal.</p>
+<p>When not implemented, model returns all repo state.</p>
+<h3 id="viewmodel"><code>view(model)</code></h3>
+<p>A special render method that is given the current result of <code>model</code>.</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">class</span> Greeter <span class="kw">extends</span> Presenter <span class="op">{</span>
+  <span class="at">model</span> (<span class="op">{</span> greet <span class="op">}</span>)
+    <span class="cf">return</span> <span class="op">{</span>
+      <span class="dt">message</span><span class="op">:</span> <span class="st">&quot;Hello, &quot;</span> <span class="op">+</span> greet
+    <span class="op">}</span>
+  <span class="op">}</span>
+  <span class="at">view</span> (<span class="op">{</span> message <span class="op">}</span>) <span class="op">{</span>
+    <span class="cf">return</span> <span class="op">&lt;</span>p<span class="op">&gt;{</span>message<span class="op">}&lt;</span><span class="ss">/p&gt;</span>
+<span class="ss">  }</span>
+<span class="ss">}</span></code></pre></div>
+<p>Views may also be assigned as getters, or as properties:</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">class</span> Example <span class="kw">extends</span> Presenter <span class="op">{</span>
+  get view <span class="op">{</span>
+    <span class="cf">return</span> MyView
+  <span class="op">}</span>
+<span class="op">}</span>
+
+<span class="co">// Or use newer class features:</span>
+
+<span class="kw">class</span> Example <span class="kw">extends</span> Presenter <span class="op">{</span>
+  view <span class="op">=</span> MyView
+<span class="op">}</span></code></pre></div>
+<p>If a view is a React component, it will invoke it with the Presenter’s model as props (including children).</p>
+<h3 id="register">register()</h3>
+Expose “intent” subscriptions to child components. This is used with the
+<Form />
+<p>add-on to improve the ergonomics of presenter/view communication (though this only occurs from the view to the presenter).</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="im">import</span> Form <span class="im">from</span> <span class="st">&#39;microcosm/addons/form&#39;</span>
+
+<span class="kw">class</span> HelloWorldPresenter <span class="kw">extends</span> Presenter <span class="op">{</span>
+  <span class="at">register</span>() <span class="op">{</span>
+    <span class="cf">return</span> <span class="op">{</span>
+      <span class="st">&#39;greet&#39;</span><span class="op">:</span> <span class="kw">this</span>.<span class="at">greet</span>
+    <span class="op">}</span>
+  <span class="op">}</span>
+  <span class="at">greet</span>() <span class="op">{</span>
+    <span class="at">alert</span>(<span class="st">&quot;hello world!&quot;</span>)
+  <span class="op">}</span>
+  <span class="at">view</span> () <span class="op">{</span>
+    <span class="cf">return</span> (
+      <span class="op">&lt;</span>Form intent<span class="op">=</span><span class="st">&quot;greet&quot;</span><span class="op">&gt;</span>
+        <span class="op">&lt;</span>button<span class="op">&gt;</span>Greet<span class="op">&lt;</span><span class="ss">/button&gt;</span>
+<span class="ss">      &lt;/Form</span><span class="op">&gt;</span>
+    )
+  <span class="op">}</span>
+<span class="op">}</span></code></pre></div></div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer__inner">
+        <nav class="footer__left">
+          <a href="https://www.npmjs.com/package/microcosm">
+            <img src="https://img.shields.io/npm/v/microcosm.svg?style=flat-square" alt="View package on NPM" />
+          </a>
+          <a href="http://code.viget.com/microcosm/changelog.html">Changelog</a>
+          <a href="https://github.com/vigetlabs/microcosm">Source</a>
+        </nav>
+        <div class="footer__right">
+          Built with patience and time by <a href="https://viget.com">●° Viget</a>
+        </div>
+      </div>
+    </footer>
+
+    <script>
+      // set active links
+      (function() {
+        var location = window.location.toString()
+
+        for (var i = 0; i < document.links.length; i++) {
+          if (document.links[i].href === location) {
+            document.links[i].classList.add('active')
+          }
+        }
+      }())
+    </script>
+  </body>
+</html>

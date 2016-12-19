@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Microcosm</title>
+
+    <meta property="og:title" content="Microcosm" />
+    <meta property="og:description" content="Flux with actions at center stage. Write optimistic updates, cancel requests, and track changes with ease."
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="http://code.viget.com/microcosm" />
+    <meta property="og:image" content="http://code.viget.com/microcosm/assets/microcosm-badge.png" />
+
+    <link rel="stylesheet" href="http://code.viget.com/microcosm/assets/style.css" />
+  </head>
+  <body>
+    <header class="header fill-bloom">
+      <div class="header__inner">
+        <a href="http://code.viget.com/microcosm">
+          <img src="http://code.viget.com/microcosm/assets/microcosm-white.svg" alt="Microcosm" height="24" width="207" />
+        </a>
+
+        <nav class="nav">
+          <a href="http://code.viget.com/microcosm/guides/quickstart.html">Guides</a>
+          <a href="https://github.com/vigetlabs/microcosm">Github</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="main -with-sidebar">
+      <aside class="sidebar">
+        <section class="sidebar__group">
+          <h4 class="sidebar__heading">Introduction</h4>
+          <ul>
+            <li><a href="http://code.viget.com/microcosm/guides/quickstart.html">Quickstart</a></li>
+            <li><a href="http://code.viget.com/microcosm/guides/architecture.html">Architecture</a></li>
+          </ul>
+        </section>
+        <section class="sidebar__group">
+          <h4 class="sidebar__heading">API</h4>
+          <ul>
+            <li><a href="http://code.viget.com/microcosm/api/microcosm.html">Microcosm</a></li>
+            <li><a href="http://code.viget.com/microcosm/api/domains.html">Domains</a></li>
+            <li><a href="http://code.viget.com/microcosm/api/actions.html">Actions</a></li>
+            <li><a href="http://code.viget.com/microcosm/api/effects.html">Effects</a></li>
+          </ul>
+        </section>
+        <section class="sidebar__group">
+          <h4 class="sidebar__heading">Addons</h4>
+          <ul>
+            <li><a href="http://code.viget.com/microcosm/api/presenter.html">Presenter</a></li>
+            <li><a href="http://code.viget.com/microcosm/api/form.html">Form</a></li>
+            <li><a href="http://code.viget.com/microcosm/api/with-intent.html">withIntent</a></li>
+          </ul>
+        </section>
+        <section class="sidebar__group">
+          <h4 class="sidebar__heading">Testing</h4>
+          <ul>
+            <li><a href="http://code.viget.com/microcosm/testing/overview.html">Overview</a></li>
+            <li><a href="http://code.viget.com/microcosm/testing/domains.html">Domains</a></li>
+            <li><a href="http://code.viget.com/microcosm/testing/effects.html">Effects</a></li>
+            <li><a href="http://code.viget.com/microcosm/testing/intents.html">Intents</a></li>
+          </ul>
+        </section>
+        <section class="sidebar__group">
+          <h4 class="sidebar__heading">Recipes</h4>
+          <ul>
+            <li><a href="http://code.viget.com/microcosm/recipes/ajax.html">AJAX</a></li>
+            <li><a href="http://code.viget.com/microcosm/recipes/react-router.html">React Router</a></li>
+            <li><a href="http://code.viget.com/microcosm/recipes/immutable-js.html">ImmutableJS</a></li>
+            <li><a href="http://code.viget.com/microcosm/recipes/preact.html">Preact</a></li>
+          </ul>
+        </section>
+      </aside>
+
+      <div class="content"><h1 id="testing-intents">Testing Intents</h1>
+<p>Microcosm Presenters have a powerful <code>intent</code> feature that allows view components to utilize the <a href="../api/form.md">Form</a> or <a href="../api/with-intent.md">withIntent</a> add-ons to communicate to a Presenter even if they are deep within a tree. This recipe walks through testing that functionality.</p>
+<h2 id="the-basic-mechanics">The Basic Mechanics</h2>
+<p>Intents rely on <a href="https://facebook.github.io/react/docs/context.html">context</a>, which can add some complexity when testing. Fortunately, setting up context with the <a href="https://github.com/airbnb/enzyme"><code>enzyme</code></a> testing library makes this painless. We use the following helper when testing intents to make this process easy:</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="im">import</span> React <span class="im">from</span> <span class="st">&#39;react&#39;</span>
+<span class="im">import</span> MyForm <span class="im">from</span> <span class="st">&#39;somewhere&#39;</span>
+<span class="im">import</span> <span class="op">{</span>mount<span class="op">}</span> <span class="im">from</span> <span class="st">&#39;enzyme&#39;</span>
+
+<span class="at">it</span>(<span class="st">&#39;broadcasts an intent when submitted&#39;</span><span class="op">,</span> <span class="kw">function</span> () <span class="op">{</span>
+  <span class="co">// You could use any testing library as long as your testing</span>
+  <span class="co">// environment has spies. We&#39;re using Jest here</span>
+  <span class="kw">const</span> send <span class="op">=</span> <span class="va">jest</span>.<span class="at">fn</span>()
+
+  <span class="kw">const</span> wrapper <span class="op">=</span> <span class="at">mount</span>(<span class="op">&lt;</span>MyForm /<span class="op">&gt;,</span> <span class="op">{</span>
+    <span class="dt">context</span><span class="op">:</span> <span class="op">{</span> send <span class="op">},</span>
+    <span class="dt">childContextTypes</span><span class="op">:</span> <span class="op">{</span>
+      <span class="dt">send</span><span class="op">:</span> <span class="va">React</span>.<span class="va">PropTypes</span>.<span class="at">func</span>
+    <span class="op">}</span>
+  <span class="op">}</span>)
+
+  <span class="va">wrapper</span>.<span class="at">simulate</span>(<span class="st">&#39;submit&#39;</span>)
+
+  <span class="at">expect</span>(send).<span class="at">lastCalledWith</span>(<span class="st">&#39;myIntent&#39;</span><span class="op">,</span> <span class="op">{</span> <span class="dt">name</span><span class="op">:</span> <span class="st">&#39;John Doe&#39;</span> <span class="op">}</span>)
+<span class="op">}</span>)</code></pre></div>
+<h2 id="a-test-helper">A Test Helper</h2>
+<p>The section above describes using enzyme to frame context. We like to keep this in a test helper to reduce boilerplate:</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="im">import</span> React <span class="im">from</span> <span class="st">&#39;react&#39;</span>
+
+<span class="im">export</span> <span class="im">default</span> <span class="kw">function</span> <span class="at">makeIntent</span> () <span class="op">{</span>
+  <span class="co">// Any spy library should do, we&#39;re using Jest</span>
+  <span class="kw">const</span> send <span class="op">=</span> <span class="va">jest</span>.<span class="at">fn</span>()
+
+  <span class="va">send</span>.<span class="at">context</span> <span class="op">=</span> <span class="op">{</span> send <span class="op">}</span>
+  <span class="va">send</span>.<span class="at">childContextTypes</span> <span class="op">=</span> <span class="op">{</span>
+    <span class="dt">send</span><span class="op">:</span> <span class="va">React</span>.<span class="va">PropTypes</span>.<span class="at">func</span>
+  <span class="op">}</span>
+
+  <span class="cf">return</span> send
+<span class="op">}</span></code></pre></div>
+<p>Then include the helper when testing:</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="im">import</span> React <span class="im">from</span> <span class="st">&#39;react&#39;</span>
+<span class="im">import</span> MyForm <span class="im">from</span> <span class="st">&#39;somewhere&#39;</span>
+<span class="im">import</span> makeIntent <span class="im">from</span> <span class="st">&#39;../helpers/make-intent&#39;</span>
+<span class="im">import</span> <span class="op">{</span>mount<span class="op">}</span> <span class="im">from</span> <span class="st">&#39;enzyme&#39;</span>
+
+<span class="at">it</span>(<span class="st">&#39;broadcasts an intent when submitted&#39;</span><span class="op">,</span> <span class="kw">function</span> () <span class="op">{</span>
+  <span class="kw">const</span> send <span class="op">=</span> <span class="at">makeIntent</span>()
+
+  <span class="kw">const</span> wrapper <span class="op">=</span> <span class="at">mount</span>(<span class="op">&lt;</span>MyForm /<span class="op">&gt;,</span> send)
+
+  <span class="va">wrapper</span>.<span class="at">simulate</span>(<span class="st">&#39;submit&#39;</span>)
+
+  <span class="at">expect</span>(send).<span class="at">lastCalledWith</span>(<span class="st">&#39;myIntent&#39;</span><span class="op">,</span> <span class="op">{</span> <span class="dt">name</span><span class="op">:</span> <span class="st">&#39;John Doe&#39;</span> <span class="op">}</span>)
+<span class="op">}</span>)</code></pre></div></div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer__inner">
+        <nav class="footer__left">
+          <a href="https://www.npmjs.com/package/microcosm">
+            <img src="https://img.shields.io/npm/v/microcosm.svg?style=flat-square" alt="View package on NPM" />
+          </a>
+          <a href="http://code.viget.com/microcosm/changelog.html">Changelog</a>
+          <a href="https://github.com/vigetlabs/microcosm">Source</a>
+        </nav>
+        <div class="footer__right">
+          Built with patience and time by <a href="https://viget.com">●° Viget</a>
+        </div>
+      </div>
+    </footer>
+
+    <script>
+      // set active links
+      (function() {
+        var location = window.location.toString()
+
+        for (var i = 0; i < document.links.length; i++) {
+          if (document.links[i].href === location) {
+            document.links[i].classList.add('active')
+          }
+        }
+      }())
+    </script>
+  </body>
+</html>

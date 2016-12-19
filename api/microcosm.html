@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Microcosm</title>
+
+    <meta property="og:title" content="Microcosm" />
+    <meta property="og:description" content="Flux with actions at center stage. Write optimistic updates, cancel requests, and track changes with ease."
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="http://code.viget.com/microcosm" />
+    <meta property="og:image" content="http://code.viget.com/microcosm/assets/microcosm-badge.png" />
+
+    <link rel="stylesheet" href="http://code.viget.com/microcosm/assets/style.css" />
+  </head>
+  <body>
+    <header class="header fill-bloom">
+      <div class="header__inner">
+        <a href="http://code.viget.com/microcosm">
+          <img src="http://code.viget.com/microcosm/assets/microcosm-white.svg" alt="Microcosm" height="24" width="207" />
+        </a>
+
+        <nav class="nav">
+          <a href="http://code.viget.com/microcosm/guides/quickstart.html">Guides</a>
+          <a href="https://github.com/vigetlabs/microcosm">Github</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="main -with-sidebar">
+      <aside class="sidebar">
+        <section class="sidebar__group">
+          <h4 class="sidebar__heading">Introduction</h4>
+          <ul>
+            <li><a href="http://code.viget.com/microcosm/guides/quickstart.html">Quickstart</a></li>
+            <li><a href="http://code.viget.com/microcosm/guides/architecture.html">Architecture</a></li>
+          </ul>
+        </section>
+        <section class="sidebar__group">
+          <h4 class="sidebar__heading">API</h4>
+          <ul>
+            <li><a href="http://code.viget.com/microcosm/api/microcosm.html">Microcosm</a></li>
+            <li><a href="http://code.viget.com/microcosm/api/domains.html">Domains</a></li>
+            <li><a href="http://code.viget.com/microcosm/api/actions.html">Actions</a></li>
+            <li><a href="http://code.viget.com/microcosm/api/effects.html">Effects</a></li>
+          </ul>
+        </section>
+        <section class="sidebar__group">
+          <h4 class="sidebar__heading">Addons</h4>
+          <ul>
+            <li><a href="http://code.viget.com/microcosm/api/presenter.html">Presenter</a></li>
+            <li><a href="http://code.viget.com/microcosm/api/form.html">Form</a></li>
+            <li><a href="http://code.viget.com/microcosm/api/with-intent.html">withIntent</a></li>
+          </ul>
+        </section>
+        <section class="sidebar__group">
+          <h4 class="sidebar__heading">Testing</h4>
+          <ul>
+            <li><a href="http://code.viget.com/microcosm/testing/overview.html">Overview</a></li>
+            <li><a href="http://code.viget.com/microcosm/testing/domains.html">Domains</a></li>
+            <li><a href="http://code.viget.com/microcosm/testing/effects.html">Effects</a></li>
+            <li><a href="http://code.viget.com/microcosm/testing/intents.html">Intents</a></li>
+          </ul>
+        </section>
+        <section class="sidebar__group">
+          <h4 class="sidebar__heading">Recipes</h4>
+          <ul>
+            <li><a href="http://code.viget.com/microcosm/recipes/ajax.html">AJAX</a></li>
+            <li><a href="http://code.viget.com/microcosm/recipes/react-router.html">React Router</a></li>
+            <li><a href="http://code.viget.com/microcosm/recipes/immutable-js.html">ImmutableJS</a></li>
+            <li><a href="http://code.viget.com/microcosm/recipes/preact.html">Preact</a></li>
+          </ul>
+        </section>
+      </aside>
+
+      <div class="content"><h1 id="microcosm">Microcosm</h1>
+<ol style="list-style-type: decimal">
+<li><a href="#overview">Overview</a></li>
+<li><a href="#api">API</a></li>
+</ol>
+<h2 id="overview">Overview</h2>
+<p>Microcosm is <a href="https://facebook.github.io/flux/">Flux</a> with first-class actions and state sandboxing.</p>
+<p>The source of truth in Microcosm is a historical record of actions. As they move through a set lifecycle, Microcosm reconciles actions in the order they were created. This makes optimistic updates, cancellation, and loading states much simpler. They self clean.</p>
+<h2 id="api">API</h2>
+<h3 id="setup"><code>setup()</code></h3>
+<p>Called whenever a Microcosm is instantiated. This provides a general purpose hook for adding domains and other setup behavior.</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">class</span> SolarSystem <span class="kw">extends</span> Microcosm <span class="op">{</span>
+  <span class="at">setup</span>() <span class="op">{</span>
+    <span class="kw">this</span>.<span class="at">addDomain</span>(<span class="st">&#39;planets&#39;</span><span class="op">,</span> Planets)
+  <span class="op">}</span>
+<span class="op">}</span></code></pre></div>
+<h3 id="getinitialstate"><code>getInitialState()</code></h3>
+<p>Generates the starting state for a Microcosm instance. This is the result of dispatching <code>getInitialState</code> to all domains. It is pure; calling this function will not update state.</p>
+<h3 id="appendaction"><code>append(action)</code></h3>
+<p>Appends an action to a Microcosm’s history, however does not execute it. This is useful for testing store responses to a specific action.</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">let</span> action <span class="op">=</span> <span class="va">repo</span>.<span class="at">append</span>(createPlanet)
+
+<span class="co">// Test that opening an action for a planet marks</span>
+<span class="co">// that planet as loading</span>
+<span class="va">action</span>.<span class="at">open</span>(<span class="op">{</span> <span class="dt">id</span><span class="op">:</span> <span class="st">&#39;pluto&#39;</span> <span class="op">}</span>)
+<span class="va">assert</span>.<span class="at">equal</span>(<span class="va">repo</span>.<span class="va">state</span>.<span class="va">planets</span>.<span class="va">pluto</span>.<span class="at">loading</span><span class="op">,</span> <span class="kw">true</span>)
+
+<span class="co">// And then test that closing the action moves marks</span>
+<span class="co">// the planet as no longer loading</span>
+<span class="va">action</span>.<span class="at">resolve</span>(<span class="op">{</span> <span class="dt">id</span><span class="op">:</span> <span class="st">&#39;pluto&#39;</span> <span class="op">}</span>)
+<span class="va">assert</span>.<span class="at">falsy</span>(<span class="va">repo</span>.<span class="va">state</span>.<span class="va">planets</span>.<span class="va">pluto</span>.<span class="at">loading</span>)</code></pre></div>
+<h3 id="pushaction-...parameters"><code>push(action, ...parameters)</code></h3>
+<p>Resolves an action. Sends the result and any errors to a given error-first callback.</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="va">repo</span>.<span class="at">push</span>(createPlanet<span class="op">,</span> <span class="op">{</span> <span class="dt">name</span><span class="op">:</span> <span class="st">&#39;Merkur&#39;</span> <span class="op">}</span>)</code></pre></div>
+<h3 id="resetdata-deserialize"><code>reset(data, deserialize?)</code></h3>
+<p>Resets state to the result of <code>Microcosm::getInitialState()</code>. If the first argument is provided, it will merge into this value. If the second argument is true, Microcosm will call <code>deserialize</code> on the data.</p>
+<h3 id="patchdata-deserialize"><code>patch(data, deserialize?)</code></h3>
+<p>Merges a data payload into the existing state. If the second argument is true, Microcosm will call <code>deserialize</code> on the data.</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="va">repo</span>.<span class="at">patch</span>(<span class="op">{</span>
+  <span class="dt">planets</span><span class="op">:</span> [<span class="op">{</span> <span class="dt">name</span><span class="op">:</span> <span class="st">&#39;Tatooine&#39;</span> <span class="op">},</span> <span class="op">{</span> <span class="dt">name</span><span class="op">:</span> <span class="st">&#39;Dagobah&#39;</span> <span class="op">}</span>]
+<span class="op">}</span>)</code></pre></div>
+<h3 id="adddomainkey-config-options"><code>addDomain(key, config, options)</code></h3>
+<p>Generates a domain based on the provided <code>config</code> and assigns it to manage the provided <code>key</code>. Whenever this domain responds to an action, it will be provided the current state for that particular key.</p>
+<p><code>options</code> passed as the third argument are sent into a domain’s <code>setup</code> method and, if using a class, the constructor.</p>
+<p><a href="domains.md">See the documentation on domains</a>.</p>
+<h3 id="addeffectconfig-options"><code>addEffect(config, options)</code></h3>
+<p>Generates an effect based on the provided <code>config</code>. <code>options</code> passed as the second argument are sent into a effect’s <code>setup</code> method and, if using a class, the constructor.</p>
+<p><a href="effects.md">See the documentation on effects</a>.</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="va">repo</span>.<span class="at">addDomain</span>(<span class="st">&#39;planets&#39;</span><span class="op">,</span> planetsConfig)</code></pre></div>
+<h3 id="serialize"><code>serialize()</code></h3>
+<p>Serialize the Microcosm’s state into a plain object. By default, domains will pass through their current staged state (pre-commit). Domains can change this behavior by implementing <code>serialize</code>.</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="va">repo</span>.<span class="at">serialize</span>() <span class="co">// =&gt; { planets: [...] }</span></code></pre></div>
+<h3 id="deserializedata"><code>deserialize(data)</code></h3>
+<p>For each key in the provided <code>data</code> parameter, transform it using the <code>deserialize</code> method provided by the domain managing that key. Then fold the deserialized data over the current repo state.</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="va">repo</span>.<span class="at">deserialize</span>(data) <span class="co">// =&gt; cleaned data</span></code></pre></div>
+<h3 id="tojson"><code>toJSON()</code></h3>
+<p>Alias for <code>serialize</code></p>
+<h3 id="prepareaction-...params"><code>prepare(action, ...params)</code></h3>
+<p>Partially applies <code>push</code>. Sucessive calls will append new parameters (see <code>push()</code>)</p>
+<h3 id="checkoutaction"><code>checkout(action)</code></h3>
+<p>Change the current focal point of the history data structure used by Microcosm. This is useful for undo/redo, or for debugging purposes:</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">const</span> red <span class="op">=</span> <span class="va">repo</span>.<span class="at">push</span>(changeColor<span class="op">,</span> <span class="st">&quot;red&quot;</span>)
+<span class="kw">const</span> green <span class="op">=</span> <span class="va">repo</span>.<span class="at">push</span>(changeColor<span class="op">,</span> <span class="st">&quot;green&quot;</span>)
+<span class="kw">const</span> blue <span class="op">=</span> <span class="va">repo</span>.<span class="at">push</span>(changeColor<span class="op">,</span> <span class="st">&quot;blue&quot;</span>)
+
+<span class="va">console</span>.<span class="at">log</span>(<span class="va">repo</span>.<span class="va">state</span>.<span class="at">color</span>) <span class="co">// &quot;blue&quot;</span>
+
+<span class="co">// Undo:</span>
+<span class="va">repo</span>.<span class="at">checkout</span>(<span class="va">blue</span>.<span class="at">parent</span>)
+<span class="va">console</span>.<span class="at">log</span>(<span class="va">repo</span>.<span class="va">state</span>.<span class="at">color</span>) <span class="co">// &quot;green&quot;</span>
+
+<span class="co">// Redo:</span>
+<span class="va">repo</span>.<span class="at">checkout</span>(<span class="va">green</span>.<span class="at">next</span>)
+<span class="va">console</span>.<span class="at">log</span>(<span class="va">repo</span>.<span class="va">state</span>.<span class="at">color</span>) <span class="co">// &quot;blue&quot;</span>
+
+<span class="co">// Skip:</span>
+<span class="va">repo</span>.<span class="at">checkout</span>(red)
+<span class="va">console</span>.<span class="at">log</span>(<span class="va">repo</span>.<span class="va">state</span>.<span class="at">color</span>) <span class="co">// &quot;red&quot;</span></code></pre></div>
+<p>The <code>maxHistory</code> option passed into a Microcosm dictates how far back it will track history. By default, it will only track incomplete actions. Try setting <code>maxHistory</code> to a specific value, like <code>10</code> or <code>100</code>.</p>
+<h3 id="onevent-callback"><code>on(event, callback)</code></h3>
+<p>Adds an event listener to a Microcosm instance. Currently, these events are:</p>
+<ul>
+<li><code>change</code>: The Microcosm instance updated state</li>
+</ul>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">const</span> repo <span class="op">=</span> <span class="kw">new</span> <span class="at">Microcosm</span>()
+
+<span class="va">repo</span>.<span class="at">on</span>(<span class="st">&#39;change&#39;</span><span class="op">,</span> callback)</code></pre></div>
+<h3 id="offevent-callback"><code>off(event, callback)</code></h3>
+<p>Remove an event listener.</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="co">// Remove a callback</span>
+<span class="va">repo</span>.<span class="at">off</span>(<span class="st">&#39;change&#39;</span><span class="op">,</span> callback)</code></pre></div>
+<h3 id="fork"><code>fork()</code></h3>
+<p>Instantiate a new Microcosm that shares the same action history as another. This is useful for producing “umbrellas” of Microcosms, particularly within a tree of UI components.</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="co">// Here we have a repo that manages a roster of people</span>
+<span class="kw">var</span> roster <span class="op">=</span> <span class="kw">new</span> <span class="at">Microcosm</span>()
+<span class="va">roster</span>.<span class="at">addStore</span>(<span class="st">&#39;people&#39;</span><span class="op">,</span> People)
+
+<span class="co">// But what if we want to focus on a single page of users?</span>
+<span class="co">// Fork gives us an answer for that</span>
+<span class="kw">var</span> fork <span class="op">=</span> <span class="va">roster</span>.<span class="at">fork</span>()
+
+<span class="co">// Adding a domain to a fork does not add it to the parent</span>
+<span class="va">fork</span>.<span class="at">addDomain</span>(<span class="st">&#39;page&#39;</span><span class="op">,</span> PaginatedPeople)
+
+<span class="co">// Pushing from a fork will add an action to the same</span>
+<span class="co">// history as the parent</span>
+<span class="va">fork</span>.<span class="at">push</span>(getPeople)</code></pre></div></div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer__inner">
+        <nav class="footer__left">
+          <a href="https://www.npmjs.com/package/microcosm">
+            <img src="https://img.shields.io/npm/v/microcosm.svg?style=flat-square" alt="View package on NPM" />
+          </a>
+          <a href="http://code.viget.com/microcosm/changelog.html">Changelog</a>
+          <a href="https://github.com/vigetlabs/microcosm">Source</a>
+        </nav>
+        <div class="footer__right">
+          Built with patience and time by <a href="https://viget.com">●° Viget</a>
+        </div>
+      </div>
+    </footer>
+
+    <script>
+      // set active links
+      (function() {
+        var location = window.location.toString()
+
+        for (var i = 0; i < document.links.length; i++) {
+          if (document.links[i].href === location) {
+            document.links[i].classList.add('active')
+          }
+        }
+      }())
+    </script>
+  </body>
+</html>
