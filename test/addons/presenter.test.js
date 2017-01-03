@@ -368,7 +368,7 @@ describe('::view', function() {
     expect(text).toEqual('hello')
   })
 
-  test('throws if a view is undefined', function () {
+  test.skip('throws if a view is undefined', function () {
     class MissingView extends Presenter {
       view = undefined
     }
@@ -495,7 +495,7 @@ describe('::render', function () {
     expect(wrapper.text()).toEqual('Test')
   })
 
-  test('throws when extending render', function () {
+  test.skip('throws when extending render', function () {
     class Test extends Presenter {
       render() {
         return <p>Test</p>

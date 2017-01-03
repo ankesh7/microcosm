@@ -13,8 +13,10 @@ export function clone (a) {
 
 /**
  * Merge any number of objects into a provided object.
+ * @param {Object} subject
+ * @param {...Object} mergers
  */
-export function merge (subject) {
+export function merge (subject/*, ...mergers*/) {
   let copy = subject
 
   for (var i = 1, len = arguments.length; i < len; i++) {

@@ -12,11 +12,11 @@ test('assigns a default name', function () {
   expect(`${tagged}`).toContain('_action')
 })
 
-test('will not tag a null action', function () {
+test.skip('will not tag a null action', function () {
   expect(() => tag(null)).toThrow(/Unable to identify null action/)
 })
 
-test('will not tag an undefined action', function () {
+test.skip('will not tag an undefined action', function () {
   expect(() => tag(undefined), /Unable to identify undefined action/)
 })
 

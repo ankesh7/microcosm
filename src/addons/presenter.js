@@ -1,5 +1,5 @@
 import { Children, PropTypes, Component, PureComponent, createElement } from 'react'
-import Microcosm, { merge, tag, inherit } from '../microcosm'
+import { Microcosm, merge, tag, inherit } from '../microcosm'
 
 const EMPTY = {}
 
@@ -16,17 +16,14 @@ const BaseComponent = PureComponent || Component
  */
 function Presenter (props, context) {
   BaseComponent.call(this, props, context)
-
-  // Do not overriding render, generate the context wrapper upon instantiation
-  if (process.env.NODE_ENV !== 'production') {
-    console.assert(this.render === Presenter.prototype.render,
-                   'Presenter::render is a protected method. Instead of overriding',
-                   'it, please use Presenter::view.')
-  }
 }
 
 inherit(Presenter, BaseComponent, {
   constructor: Presenter,
+
+  getRepo (repo, props) {
+    return repo ? repo.fork() : new Microcosm()
+  },
 
   _setRepo (repo) {
     this.repo = repo
@@ -93,11 +90,6 @@ inherit(Presenter, BaseComponent, {
   },
 
   render () {
-    // If the view is null, then it is probably incorrectly referenced
-    console.assert(this.view != null,
-                   `${this.constructor.name}::view() is`,
-                   `${typeof this.view}. Is it referenced correctly?`)
-
     return (
       createElement(PresenterContext, {
         parentProps : this.props,
@@ -150,7 +142,7 @@ inherit(PresenterContext, BaseComponent, {
 
     const model = merge(parentProps, this.state)
 
-    if (presenter.view.contextTypes || presenter.view.prototype.isReactComponent) {
+    if (presenter.hasOwnProperty('view') || presenter.view.prototype.setState) {
       return createElement(presenter.view, model)
     }
 
@@ -158,9 +150,9 @@ inherit(PresenterContext, BaseComponent, {
   },
 
   getRepo () {
-    const repo = this.props.repo || this.context.repo
+    const { presenter, parentProps, repo } = this.props
 
-    return repo ? repo.fork() : new Microcosm()
+    return presenter.getRepo(repo || this.context.repo, parentProps)
   },
 
   updatePropMap ({ presenter, parentProps, parentState }) {
