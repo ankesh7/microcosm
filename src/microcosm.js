@@ -275,7 +275,7 @@ inherit(Microcosm, Emitter, {
    * @param {Object|Function} domain  Configuration options to create a domain
    * @return {Microcosm} self
    */
-  addDomain:function (key, domain, options) {
+  addDomain (key, domain, options) {
     this.realm.add(key, domain, options)
 
     this.follower = false
